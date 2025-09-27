@@ -8,7 +8,7 @@ import troubleshooting
 
 st.set_page_config(page_title="MBZUAI Onboarding Guide", layout="wide")
 
-st.title("🚀 MBZUAI Onboarding Guide")
+st.title("MBZUAI Onboarding Guide")
 st.subheader("Helping Students & Faculty with Research Workflows in AI")
 
 # Tabs
