@@ -1,1 +1,8 @@
-streamlit
+streamlit>=1.25.0
+torch>=2.1.0            # For GPU example code
+torchvision>=0.16.0
+torchaudio>=2.1.0
+opencv-python>=4.8.0
+matplotlib>=3.8.0
+numpy>=1.26.0
+pandas>=2.1.0
