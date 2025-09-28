@@ -5,6 +5,7 @@ import containerization
 import hpc_job_scheduling
 import gpu_performance
 import troubleshooting
+import tools
 
 st.set_page_config(page_title="MBZUAI Onboarding Guide", layout="wide")
 
@@ -31,7 +32,8 @@ tabs = st.tabs([
     "Containerization",
     "HPC Job Scheduling",
     "GPU Performance Basics",
-    "Troubleshooting Techniques"
+    "Troubleshooting Techniques",
+    "Tools"
 ])
 
 with tabs[0]:
@@ -46,3 +48,5 @@ with tabs[4]:
     gpu_performance.render()
 with tabs[5]:
     troubleshooting.render()
+with tabs[6]:
+    tools.render()    
