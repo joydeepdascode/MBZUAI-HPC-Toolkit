@@ -120,9 +120,9 @@ singularity exec image.sif python3 train_model.py
         """)
 
     # -------------------------
-    # Interview Drill
+    # Drill
     # -------------------------
-    with st.expander("❓ Interview Drill — quick Q&A"):
+    with st.expander("❓ Questions — quick Q&A"):
         st.markdown(textwrap.dedent("""
         1. Difference between Docker and Singularity?  
         - Docker needs root, Singularity is rootless and HPC-safe.  
