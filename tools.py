@@ -2,21 +2,46 @@
 import streamlit as st
 import textwrap
 
-# helper function for copy button
+import uuid
+
 def copy_button(text, label="📋 Copy to Clipboard"):
+    """
+    Renders a copy-to-clipboard button in Streamlit.
+    Each button gets a unique ID to avoid conflicts.
+    """
+    button_id = str(uuid.uuid4()).replace("-", "")
     copy_code = f"""
-    <textarea id="to-copy" style="position:absolute;left:-1000px;top:-1000px;">{text}</textarea>
-    <button onclick="copyText()" style="margin-top:5px;">{label}</button>
-    <script>
-    function copyText() {{
-        var copyBox = document.getElementById("to-copy");
-        copyBox.select();
-        document.execCommand("copy");
-        alert("✅ Copied to clipboard!");
-    }}
-    </script>
+        <textarea id="to-copy-{button_id}" style="position:absolute; left:-9999px;">{text}</textarea>
+        <button onclick="copyText{button_id}()" 
+                style="margin-top:5px; padding:5px 10px; border:none; background:#4CAF50; color:white; border-radius:5px; cursor:pointer;">
+            {label}
+        </button>
+        <script>
+        function copyText{button_id}() {{
+            var copyBox = document.getElementById("to-copy-{button_id}");
+            copyBox.select();
+            document.execCommand("copy");
+            alert("✅ Copied to clipboard!");
+        }}
+        </script>
     """
     st.markdown(copy_code, unsafe_allow_html=True)
+
+# helper function for copy button
+# def copy_button(text, label="📋 Copy to Clipboard"):
+#     copy_code = f"""
+#     <textarea id="to-copy" style="position:absolute;left:-1000px;top:-1000px;">{text}</textarea>
+#     <button onclick="copyText()" style="margin-top:5px;">{label}</button>
+#     <script>
+#     function copyText() {{
+#         var copyBox = document.getElementById("to-copy");
+#         copyBox.select();
+#         document.execCommand("copy");
+#         alert("✅ Copied to clipboard!");
+#     }}
+#     </script>
+#     """
+#     st.markdown(copy_code, unsafe_allow_html=True)
 
 
 def render():
