@@ -19,16 +19,16 @@ import textwrap
 #     st.markdown(copy_code, unsafe_allow_html=True)
 
 # tools.py
-import pyperclip
+# import pyperclip
 
-def copy_button(text: str, label="📋 Copy to Clipboard"):
-    """
-    Cross-platform copy-to-clipboard for Streamlit.
-    Uses pyperclip (server-side) instead of injecting raw JS.
-    """
-    if st.button(label):
-        pyperclip.copy(text)
-        st.success("✅ Copied to clipboard!")
+# def copy_button(text: str, label="📋 Copy to Clipboard"):
+#     """
+#     Cross-platform copy-to-clipboard for Streamlit.
+#     Uses pyperclip (server-side) instead of injecting raw JS.
+#     """
+#     if st.button(label):
+#         pyperclip.copy(text)
+#         st.success("✅ Copied to clipboard!")
 
 
 def render():
