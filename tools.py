@@ -70,7 +70,7 @@ def render():
                 """
                 dockerfile = textwrap.dedent(dockerfile)
                 st.code(dockerfile, language="dockerfile")
-                copy_button(dockerfile, "📋 Copy Dockerfile")
+                # copy_button(dockerfile, "📋 Copy Dockerfile")
 
             else:  # Singularity
                 singularity = f"""
@@ -86,7 +86,7 @@ def render():
                 """
                 singularity = textwrap.dedent(singularity)
                 st.code(singularity, language="bash")
-                copy_button(singularity, "📋 Copy Singularity Definition")
+                # copy_button(singularity, "📋 Copy Singularity Definition")
 
     # ------------------------
     # SLURM Script Generator
@@ -130,6 +130,6 @@ def render():
             """
             slurm_script = textwrap.dedent(slurm_script)
             st.code(slurm_script, language="bash")
-            copy_button(slurm_script, "📋 Copy SLURM Script")
+            # copy_button(slurm_script, "📋 Copy SLURM Script")
 
     st.info("✅ Tip: Copy the generated code into your HPC environment.")
