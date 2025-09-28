@@ -2,6 +2,23 @@
 import streamlit as st
 import textwrap
 
+# helper function for copy button
+def copy_button(text, label="📋 Copy to Clipboard"):
+    copy_code = f"""
+    <textarea id="to-copy" style="position:absolute;left:-1000px;top:-1000px;">{text}</textarea>
+    <button onclick="copyText()" style="margin-top:5px;">{label}</button>
+    <script>
+    function copyText() {{
+        var copyBox = document.getElementById("to-copy");
+        copyBox.select();
+        document.execCommand("copy");
+        alert("✅ Copied to clipboard!");
+    }}
+    </script>
+    """
+    st.markdown(copy_code, unsafe_allow_html=True)
+
+
 def render():
     st.header("🛠️ HPC Tools — Container & SLURM Script Generator")
 
@@ -21,8 +38,8 @@ def render():
         st.markdown("Generate a **Dockerfile** or **Singularity definition** for AI/ML workloads.")
 
         container_type = st.radio("Select container type:", ["Dockerfile", "Singularity"])
-        base_image = st.text_input("Base image (e.g., pytorch/pytorch:2.1.0-cuda11.8-cudnn8-runtime)")
-        install_libs = st.text_area("Python libraries to install (space-separated)", "numpy pandas matplotlib torch torchvision opencv-python")
+        base_image = st.text_input("Base image", "pytorch/pytorch:2.1.0-cuda11.8-cudnn8-runtime")
+        install_libs = st.text_area("Python libraries (space-separated)", "numpy pandas matplotlib torch torchvision opencv-python")
         entry_cmd = st.text_input("Default command", "python3")
 
         if st.button("Generate Container Spec"):
@@ -41,7 +58,7 @@ def render():
                 """
                 dockerfile = textwrap.dedent(dockerfile)
                 st.code(dockerfile, language="dockerfile")
-                st.copy_button("📋 Copy Dockerfile", dockerfile)
+                copy_button(dockerfile, "📋 Copy Dockerfile")
 
             else:  # Singularity
                 singularity = f"""
@@ -57,7 +74,7 @@ def render():
                 """
                 singularity = textwrap.dedent(singularity)
                 st.code(singularity, language="bash")
-                st.copy_button("📋 Copy Singularity Definition", singularity)
+                copy_button(singularity, "📋 Copy Singularity Definition")
 
     # ------------------------
     # SLURM Script Generator
@@ -66,7 +83,6 @@ def render():
         st.subheader("📜 SLURM Script Generator")
         st.markdown("Generate a **custom job script** for MBZUAI’s SLURM system on **A100 GPUs**.")
 
-        # User inputs
         job_name = st.text_input("Job Name", "ai_training_job")
         time = st.text_input("Walltime (HH:MM:SS)", "02:00:00")
         gpus = st.number_input("Number of GPUs", 1, 8, 1)
@@ -102,6 +118,6 @@ def render():
             """
             slurm_script = textwrap.dedent(slurm_script)
             st.code(slurm_script, language="bash")
-            st.copy_button("📋 Copy SLURM Script", slurm_script)
+            copy_button(slurm_script, "📋 Copy SLURM Script")
 
-    st.info("✅ Tip: Copy the generated files and paste them into your HPC environment.")
+    st.info("✅ Tip: Copy the generated code into your HPC environment.")
