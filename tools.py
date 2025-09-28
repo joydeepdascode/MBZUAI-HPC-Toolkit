@@ -2,31 +2,6 @@
 import streamlit as st
 import textwrap
 
-import uuid
-
-def copy_button(text, label="📋 Copy to Clipboard"):
-    """
-    Renders a copy-to-clipboard button in Streamlit.
-    Each button gets a unique ID to avoid conflicts.
-    """
-    button_id = str(uuid.uuid4()).replace("-", "")
-    copy_code = f"""
-        <textarea id="to-copy-{button_id}" style="position:absolute; left:-9999px;">{text}</textarea>
-        <button onclick="copyText{button_id}()" 
-                style="margin-top:5px; padding:5px 10px; border:none; background:#4CAF50; color:white; border-radius:5px; cursor:pointer;">
-            {label}
-        </button>
-        <script>
-        function copyText{button_id}() {{
-            var copyBox = document.getElementById("to-copy-{button_id}");
-            copyBox.select();
-            document.execCommand("copy");
-            alert("✅ Copied to clipboard!");
-        }}
-        </script>
-    """
-    st.markdown(copy_code, unsafe_allow_html=True)
-
 # helper function for copy button
 # def copy_button(text, label="📋 Copy to Clipboard"):
 #     copy_code = f"""
@@ -42,6 +17,18 @@ def copy_button(text, label="📋 Copy to Clipboard"):
 #     </script>
 #     """
 #     st.markdown(copy_code, unsafe_allow_html=True)
+
+# tools.py
+import pyperclip
+
+def copy_button(text: str, label="📋 Copy to Clipboard"):
+    """
+    Cross-platform copy-to-clipboard for Streamlit.
+    Uses pyperclip (server-side) instead of injecting raw JS.
+    """
+    if st.button(label):
+        pyperclip.copy(text)
+        st.success("✅ Copied to clipboard!")
 
 
 def render():
