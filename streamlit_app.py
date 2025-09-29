@@ -7,7 +7,7 @@ import gpu_performance
 import troubleshooting
 import tools
 
-st.set_page_config(page_title="MBZUAI Onboarding Guide", layout="wide")
+st.set_page_config(page_title="MBZUAI - AI & HPC Workflow", layout="wide")
 
 st.title("MBZUAI Onboarding Guide")
 st.subheader("Helping Students & Faculty with Research Workflows in AI")
