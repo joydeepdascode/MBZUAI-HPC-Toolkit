@@ -24,7 +24,6 @@ def render():
     1.  **Local Development & Packaging (with Docker 🐳):** You build and test your application and its dependencies in a reproducible environment on your local machine.
     2.  **HPC Deployment & Execution (with Apptainer 📦):** You convert your Docker image into a single, secure `.sif` file and run it on a shared HPC cluster using a job scheduler like SLURM.
     """)
-    st.image("https://docs.sanger-dev.org/images/singularity_workflow.png", caption="Container workflow: from Docker build to Apptainer on HPC.")
 
     st.markdown("---")
 
