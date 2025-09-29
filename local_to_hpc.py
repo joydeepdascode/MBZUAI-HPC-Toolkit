@@ -154,7 +154,8 @@ def render():
         st.subheader("1. Dockerfile (Local Environment Definition)")
         st.info("Define your environment in a **`Dockerfile`**. It starts from a trusted, GPU-ready base image (e.g., NVIDIA's NGC PyTorch image).")
         # ***The problematic call from the traceback is here. It is now using the function correctly.***
-        st.code(generate_dockerfile(), language='docker', label="Dockerfile") 
+        # st.code(generate_dockerfile(), language='docker', label="Dockerfile") 
+        st.code(generate_dockerfile(), language='docker')
 
         st.subheader("2. Docker & Private Registry Commands (Local Machine)")
         image_tag = f"{MBZUAI_REGISTRY_HOST}/{MBZUAI_PROJECT_REPO}/{LLM_IMAGE_NAME}:v1.0"
