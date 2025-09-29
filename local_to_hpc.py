@@ -170,7 +170,8 @@ docker login {MBZUAI_REGISTRY_HOST}
 # 3. Push the image to the registry for Apptainer access
 docker push {image_tag}
 """
-        st.code(docker_commands, language='bash', label="Docker Build and Push Commands")
+        # st.code(docker_commands, language='bash', label="Docker Build and Push Commands")
+        st.code(docker_commands, language='bash')
 
         st.subheader("3. Apptainer Commands (HPC Login Node)")
         st.warning("Ensure the **Apptainer module is loaded** (`module load apptainer`) before running these commands on the HPC login node.")
