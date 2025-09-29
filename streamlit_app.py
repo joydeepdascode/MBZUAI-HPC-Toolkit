@@ -28,7 +28,7 @@ st.subheader("Helping Students & Faculty with Research Workflows in AI")
 
 # Tabs
 tabs = st.tabs([
-    "Local To HPC",
+    "Local To HPC - (Tool)",
     "Linux Administration",
     "Bash Scripting",
     "Containerization",
