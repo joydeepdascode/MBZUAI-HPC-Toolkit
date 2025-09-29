@@ -1,4 +1,3 @@
-# containerization.py
 import streamlit as st
 import textwrap
 
@@ -7,35 +6,32 @@ def _code(cmd: str, language="bash"):
     st.code(textwrap.dedent(cmd).strip(), language=language)
 
 def render():
-    st.header("📦 Containerization Mastery: From Local to HPC")
+    st.subheader("📦 Containerization Mastery: From Local to HPC")
     st.markdown("""
     Goal: Understand **why and how containers are used in HPC labs** like MBZUAI, 
     and learn the **end-to-end workflow** to run AI workloads inside them with Docker and Apptainer.
     """)
 
-    st.markdown("---")
-
     # -------------------------
-    # The End-to-End Workflow
+    # The End-to-End Workflow (Removed st.markdown("---"))
     # -------------------------
-    st.subheader("The AI Research Container Workflow")
+    st.markdown("### The AI Research Container Workflow") # Using markdown for sub-title to reduce space
     st.markdown("""
     The standard process for researchers is a **two-step journey**:
     1.  **Local Development & Packaging (with Docker 🐳):** You build and test your application and its dependencies in a reproducible environment on your local machine.
     2.  **HPC Deployment & Execution (with Apptainer 📦):** You convert your Docker image into a single, secure `.sif` file and run it on a shared HPC cluster using a job scheduler like SLURM.
     """)
-
-    st.markdown("---")
-
+    
     # -------------------------
     # Docker Basics
     # -------------------------
+    st.markdown("---") # Keep one separator before the main steps
     with st.expander("Step 1: Local Development with Docker 🐳"):
         st.markdown("""
         **Docker** is for developers. It helps you define a perfect environment for your project with a `Dockerfile`.
         """)
         
-        st.subheader("Example: Building a PyTorch Container")
+        st.markdown("#### Example: Building a PyTorch Container") # Using markdown h4 to reduce space
         st.markdown("Start by writing your `Dockerfile` to capture all dependencies.")
         _code("""
         # Use an official PyTorch image as the base.
@@ -49,14 +45,13 @@ def render():
         COPY . /app/
 
         # Install any additional libraries your code needs.
-        # Here, we're installing a package from PyPI.
         RUN pip install transformers
 
         # Set the default command to run when the container starts.
         CMD ["python", "train.py"]
         """, language="Dockerfile")
 
-        st.markdown("**Build and Run Locally**")
+        st.markdown("#### Build and Run Locally") # Using markdown h4 to reduce space
         st.markdown("After saving the file, use these commands to build and run it on your machine:")
         _code("""
         # Build the image from the Dockerfile.
@@ -66,8 +61,6 @@ def render():
         docker run --rm -it my-ai-app
         """)
 
-    st.markdown("---")
-
     # -------------------------
     # Singularity / Apptainer
     # -------------------------
@@ -76,7 +69,7 @@ def render():
         **Apptainer (formerly Singularity)** is for HPC. It's designed to run containers securely and seamlessly on multi-user systems. It converts your Docker image into a single `.sif` file.
         """)
         
-        st.subheader("Converting the Docker Image")
+        st.markdown("#### Converting the Docker Image") # Using markdown h4 to reduce space
         st.markdown("First, you need to pull and convert your Docker image into a `.sif` file. This is typically done on an HPC login node or a dedicated build machine.")
         _code("""
         # Convert the Docker image you just built into a .sif file.
@@ -84,7 +77,7 @@ def render():
         apptainer build my-ai-app.sif docker-daemon://my-ai-app:latest
         """)
 
-        st.subheader("Running the Container on the HPC")
+        st.markdown("#### Running the Container on the HPC") # Using markdown h4 to reduce space
         st.markdown("Now, you can run the `.sif` file on the cluster. It's a single, portable executable.")
         _code("""
         # Run a command inside the container. The '--nv' flag is crucial for NVIDIA GPU access!
@@ -94,8 +87,6 @@ def render():
         > **Note:** The `--nv` flag is what allows the container to see the host's NVIDIA drivers and CUDA libraries.
         """)
 
-    st.markdown("---")
-
     # -------------------------
     # HPC Integration with SLURM
     # -------------------------
@@ -104,7 +95,7 @@ def render():
         The final step is to put your Apptainer command inside a SLURM job script to run your workload on the compute nodes.
         """)
         
-        st.subheader("Example SLURM Script (`run_job.sh`)")
+        st.markdown("#### Example SLURM Script (`run_job.sh`)") # Using markdown h4 to reduce space
         st.markdown("This script requests resources and executes your containerized application.")
         _code("""
         #!/bin/bash
@@ -125,19 +116,18 @@ def render():
         apptainer exec --nv my-ai-app.sif python /app/train.py --data_path /path/to/data
         """)
 
-        st.markdown("**Submitting Your Job**")
+        st.markdown("#### Submitting Your Job") # Using markdown h4 to reduce space
         st.markdown("Submit the job to the cluster scheduler:")
         _code("""
         sbatch run_job.sh
         """)
 
-    st.markdown("---")
-
     # -------------------------
     # Exercises & Q&A
     # -------------------------
+    st.markdown("---")
     with st.expander("📝 Exercises & Quick Q&A"):
-        st.subheader("Exercises")
+        st.markdown("### Exercises") # Using markdown h3 to reduce space
         st.markdown("""
         1.  Build a Docker image that includes a specific version of a library (e.g., `transformers==4.30.0`).
         2.  Write a Python script that checks the version of that library and include it in your container.
@@ -145,7 +135,7 @@ def render():
         4.  Write and submit a SLURM script to run the version-check script inside the container.
         5.  **Bonus:** Try to mount a local data directory into the container using the `--bind` flag in your `apptainer exec` command.
         """)
-        st.subheader("Quick Q&A")
+        st.markdown("### Quick Q&A") # Using markdown h3 to reduce space
         st.markdown(textwrap.dedent("""
         1.  **Why Docker locally, but Apptainer on HPC?**
             - Docker needs a root-owned daemon, which is a security risk on shared HPC systems. Apptainer is designed to run securely and rootlessly.
@@ -159,18 +149,18 @@ def render():
     st.success("You are now equipped to containerize and deploy your AI workloads on an HPC cluster. 🚀")
 
     # -------------------------
-    # List of Commands
+    # List of Commands (Reduced spacing here too)
     # -------------------------
     st.markdown("---")
-    st.header("Docker vs. Apptainer: Command Reference")
+    st.markdown("## Docker vs. Apptainer: Command Reference")
 
     st.markdown("""
-    Here is an extensive list of common Docker and Apptainer commands. While they serve a similar purpose of managing containers, their command-line interfaces and underlying philosophies differ significantly. Docker is focused on microservices and multi-user environments, while Apptainer (formerly Singularity) is optimized for high-performance computing (HPC) environments and scientific research, prioritizing a single-user, secure model.
+    Here is an extensive list of common Docker and Apptainer commands. While they serve a similar purpose of managing containers, their command-line interfaces and underlying philosophies differ significantly.
     """)
 
     st.markdown("---")
 
-    st.subheader("Docker Commands")
+    st.markdown("### Docker Commands")
     st.markdown("Docker commands are generally structured as `docker [command] [options]`.")
 
     st.markdown("#### **Image Management**")
@@ -205,7 +195,7 @@ def render():
     """)
     st.markdown("---")
 
-    st.subheader("Apptainer Commands")
+    st.markdown("### Apptainer Commands")
     st.markdown("Apptainer commands are generally structured as `apptainer [command] [options]`.")
 
     st.markdown("#### **Image Management**")
@@ -235,7 +225,7 @@ def render():
     """)
     st.markdown("---")
 
-    st.header("Dockerfile: The Blueprint for a Container")
+    st.markdown("## Dockerfile: The Blueprint for a Container")
     st.markdown("""
     A **Dockerfile** is a text file that contains a series of instructions for Docker to build a **Docker image**. Each instruction creates a new layer on top of the previous one, defining the complete environment—from the operating system to the application code and dependencies.
     """)
