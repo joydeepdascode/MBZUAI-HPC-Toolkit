@@ -7,7 +7,7 @@ def _code(cmd: str, language="bash"):
     st.code(textwrap.dedent(cmd).strip(), language=language)
 
 def render():
-    st.header("3️⃣ Containerization Mastery: From Local to HPC")
+    st.header("📦 Containerization Mastery: From Local to HPC")
     st.markdown("""
     Goal: Understand **why and how containers are used in HPC labs** like MBZUAI, 
     and learn the **end-to-end workflow** to run AI workloads inside them with Docker and Apptainer.
