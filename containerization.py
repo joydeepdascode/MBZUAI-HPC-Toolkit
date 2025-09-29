@@ -7,7 +7,7 @@ def _code(cmd: str, language="bash"):
     st.code(textwrap.dedent(cmd).strip(), language=language)
 
 def render():
-    st.header("3️⃣ Containerization Mastery: From Laptop to HPC")
+    st.header("3️⃣ Containerization Mastery: From Local to HPC")
     st.markdown("""
     Goal: Understand **why and how containers are used in HPC labs** like MBZUAI, 
     and learn the **end-to-end workflow** to run AI workloads inside them with Docker and Apptainer.
@@ -157,3 +157,79 @@ def render():
             - Containers include the entire OS, making them portable and fully reproducible across different clusters. Conda environments can still fail due to underlying OS differences.
         """))
     st.success("You are now equipped to containerize and deploy your AI workloads on an HPC cluster. 🚀")
+
+    # -------------------------
+    # List of Commands
+    # -------------------------
+    st.markdown("---")
+    st.header("Docker vs. Apptainer: Command Reference")
+
+    st.markdown("""
+    Here is an extensive list of common Docker and Apptainer commands. While they serve a similar purpose of managing containers, their command-line interfaces and underlying philosophies differ significantly. Docker is focused on microservices and multi-user environments, while Apptainer (formerly Singularity) is optimized for high-performance computing (HPC) environments and scientific research, prioritizing a single-user, secure model.
+    """)
+
+    st.markdown("---")
+
+    st.subheader("Docker Commands")
+    st.markdown("Docker commands are generally structured as `docker [command] [options]`.")
+
+    st.markdown("#### **Image Management**")
+    _code("""
+    docker pull [image_name]              # Downloads an image from a registry
+    docker build -t [image_name]:[tag] .  # Builds a new image from a Dockerfile
+    docker images                         # Lists all local Docker images
+    docker rmi [image_id]                 # Removes one or more images
+    docker push [image_name]              # Uploads a local image to a registry
+    docker search [search_term]           # Searches for images on Docker Hub
+    """)
+
+    st.markdown("#### **Container Lifecycle**")
+    _code("""
+    docker run [options] [image_name] [command]   # Creates and starts a new container
+    docker ps                                     # Lists all running containers
+    docker ps -a                                  # Lists all containers (including stopped)
+    docker start [container_id/name]              # Starts a stopped container
+    docker stop [container_id/name]               # Gracefully stops a running container
+    docker kill [container_id/name]               # Forcibly stops a running container
+    docker rm [container_id/name]                 # Removes a stopped container
+    docker exec -it [container_id/name] [command] # Executes a command inside a running container
+    docker logs [container_id/name]               # Fetches the logs of a container
+    """)
+
+    st.markdown("#### **System and Cleanup**")
+    _code("""
+    docker info             # Displays system-wide Docker information
+    docker system prune     # Removes unused containers, networks, images, etc.
+    docker volume ls        # Lists all Docker volumes
+    docker network ls       # Lists all Docker networks
+    """)
+    st.markdown("---")
+
+    st.subheader("Apptainer Commands")
+    st.markdown("Apptainer commands are generally structured as `apptainer [command] [options]`.")
+
+    st.markdown("#### **Image Management**")
+    _code("""
+    apptainer build [sif_file_name] [source_uri]              # Builds a new SIF image
+    apptainer pull [sif_file_name] [source_uri]               # Downloads and converts an image
+    apptainer push [sif_file_name] [destination_uri]          # Uploads a SIF image to a registry
+    apptainer inspect [sif_file_name]                         # Displays metadata about a SIF image
+    apptainer verify [sif_file_name]                          # Verifies the digital signature of an image
+    """)
+
+    st.markdown("#### **Container Execution**")
+    _code("""
+    apptainer run [sif_file_name] [args]          # Executes the default runscript inside the image
+    apptainer shell [sif_file_name]               # Gives you an interactive shell inside the container
+    apptainer exec [sif_file_name] [command]      # Executes a command inside the container
+    apptainer instance start [sif_file_name] [instance_name] # Runs a container as a long-running service
+    apptainer instance list                       # Lists all currently running Apptainer instances
+    apptainer instance stop [instance_name]       # Stops a named Apptainer instance
+    """)
+
+    st.markdown("#### **Security and Networking**")
+    _code("""
+    apptainer sign [sif_file_name]                # Cryptographically signs a SIF image
+    apptainer remote                              # Manages remote registries and keyservers
+    apptainer oci                                 # Works with OCI-compliant images (like Docker)
+    """)
