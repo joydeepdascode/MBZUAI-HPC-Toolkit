@@ -10,7 +10,7 @@ import local_to_hpc
 
 st.set_page_config(page_title="MBZUAI - AI & HPC Workflow", layout="wide")
 
-st.title("MBZUAI Onboarding Guide")
+st.title("MBZUAI - AI & HPC Workflow")
 st.subheader("Helping Students & Faculty with Research Workflows in AI")
 
 # Create two columns, with the second one being much smaller
