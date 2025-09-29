@@ -3,8 +3,9 @@ import streamlit as st
 
 # --- Configuration Constants (MBZUAI Context) ---
 # Use more generic names to target AI applications in general
-MBZUAI_REGISTRY_HOST = "registry.mbzuai.ac"
-MBZUAI_PROJECT_REPO = "ai-research"
+# Replaced specific hardcoded values with generic, relevant names
+PRIVATE_DOCKER_REGISTRY = "hpc-registry.cscc.local"  # Relevant generic name
+HPC_PROJECT_REPOSITORY = "research-containers"       # Relevant generic name
 DEFAULT_IMAGE_NAME = "ml-app-base" # Generalized image name
 SLURM_ACCOUNT = "ai_research_hpc" # Generalized account name
 HPC_DATA_PATH = "/shared/scratch/ai_datasets" # Generalized data path
@@ -162,6 +163,8 @@ def render():
     """Renders the Streamlit UI for the Local To HPC tab."""
     st.header("Local To HPC: Containerized AI Workflow 📦➡️💻")
     st.markdown("A step-by-step guide to move your PyTorch/AI code from local development to execution on the MBZUAI HPC Cluster using **Docker/Apptainer** and **SLURM**.")
+    
+    st.info("These tools are designed for MBZUAI’s **Campus Supercomputing Center (CSCC)**, powered by **HPE Apollo 6500 Gen10 Plus** with **AMD EPYC CPUs** and **384 NVIDIA A100 GPUs**.")
 
     tab1, tab2 = st.tabs(["Container Build Generator 🛠️", "SLURM Jobscript Generator ⚙️"])
 
@@ -176,15 +179,15 @@ def render():
         col_t1_1, col_t1_2 = st.columns(2)
         with col_t1_1:
             base_image_version = st.text_input("NVIDIA PyTorch Base Image Tag", 
-                                                value="24.08-py3", 
-                                                help="Find the latest tags on NGC (e.g., 24.08-py3).",
-                                                key="docker_base_tag")
+                                               value="24.08-py3", 
+                                               help="Find the latest tags on NGC (e.g., 24.08-py3).",
+                                               key="docker_base_tag")
         with col_t1_2:
             app_script_name = st.text_input("Main Application Script File", 
                                             value="train_llm_model.py", 
                                             help="The Python script to run when the container starts.",
                                             key="docker_script_name")
-        
+            
         app_image_name = st.text_input("AI Project Name / Image Name", 
                                        value=DEFAULT_IMAGE_NAME, 
                                        help="Used to tag the Docker image and name the SIF file (e.g., my-cv-model).",
@@ -198,14 +201,15 @@ def render():
         st.code(dockerfile_content, language='docker')
 
         st.subheader("2. Docker & Private Registry Commands (Local Machine)")
-        image_tag = f"{MBZUAI_REGISTRY_HOST}/{MBZUAI_PROJECT_REPO}/{app_image_name}:v1.0"
+        # *** CONSTANT REPLACEMENT: Used generic names here ***
+        image_tag = f"{PRIVATE_DOCKER_REGISTRY}/{HPC_PROJECT_REPOSITORY}/{app_image_name}:v1.0"
         
         docker_commands = f"""
 # 1. Build the Docker image on your local machine
 docker build -t {image_tag} .
 
-# 2. Authenticate to the MBZUAI Private Registry
-docker login {MBZUAI_REGISTRY_HOST} 
+# 2. Authenticate to the HPC Private Registry
+docker login {PRIVATE_DOCKER_REGISTRY} 
 
 # 3. Push the image to the registry for Apptainer access
 docker push {image_tag}
