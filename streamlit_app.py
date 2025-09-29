@@ -5,7 +5,7 @@ import containerization
 import hpc_job_scheduling
 import gpu_performance
 import troubleshooting
-import tools
+# import tools             #(Old Discarded)
 import local_to_hpc
 
 st.set_page_config(page_title="MBZUAI - AI & HPC Workflow", layout="wide")
@@ -35,7 +35,7 @@ tabs = st.tabs([
     "HPC Job Scheduling",
     "GPU Performance Basics",
     "Troubleshooting Techniques",
-    "Tools"
+    # "Tools"
 ])
 
 with tabs[0]:
@@ -52,5 +52,5 @@ with tabs[5]:
     gpu_performance.render()
 with tabs[6]:
     troubleshooting.render()
-with tabs[7]:
-    tools.render()    
+# with tabs[7]:
+#     tools.render()    
