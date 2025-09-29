@@ -2,20 +2,24 @@
 import streamlit as st
 
 # --- Configuration Constants (MBZUAI Context) ---
-# NOTE: Replace with actual private registry details
+# These variables must be defined before being used by the generator functions.
 MBZUAI_REGISTRY_HOST = "registry.mbzuai.ac" 
 MBZUAI_PROJECT_REPO = "llm-dev"
 LLM_IMAGE_NAME = "mha-prototype"
 SLURM_ACCOUNT = "llm_research_nlp"
-HPC_DATA_PATH = "/shared/scratch/llm_datasets" # Common shared filesystem path
+HPC_DATA_PATH = "/shared/scratch/llm_datasets" 
 
 # --- Generator Functions ---
 
-def generate_dockerfile():
-    """Generates the Dockerfile content."""
+def generate_dockerfile(image_version="2.3.0-py3"):
+    """
+    Generates the Dockerfile content.
+    Uses the defined constants from the module scope.
+    """
+    # Using an f-string to embed the constants defined above
     return f"""# Dockerfile for MBZUAI LLM Prototype (NLP/IFM Research)
 # Use NVIDIA PyTorch NGC container as base for maximum GPU compatibility
-FROM nvcr.io/nvidia/pytorch:2.3.0-py3 AS builder
+FROM nvcr.io/nvidia/pytorch:{image_version} AS builder
 
 # Set the working directory
 WORKDIR /app
@@ -34,9 +38,13 @@ CMD ["python", "train_llm_model.py", "--config", "/app/config/default.yaml"]
 """
 
 def generate_slurm_script(optimization_type, nodes, gpus_per_node, time):
-    """Generates a customized SLURM job script for LLM training."""
+    """
+    Generates a customized SLURM job script for LLM training.
+    Uses the defined constants from the module scope.
+    """
     
     # --- Optimization Specific Logic and Command Setup ---
+    # (Rest of the logic remains the same, using the module-level constants)
     if optimization_type == "Highly-Optimized for A100/H100":
         # Multi-Node DDP using torchrun (standard for large LLMs)
         gpu_request = f"#SBATCH --gpus-per-node={gpus_per_node} \n#SBATCH --constraint=a100|h100"
@@ -145,7 +153,8 @@ def render():
     with tab1:
         st.subheader("1. Dockerfile (Local Environment Definition)")
         st.info("Define your environment in a **`Dockerfile`**. It starts from a trusted, GPU-ready base image (e.g., NVIDIA's NGC PyTorch image).")
-        st.code(generate_dockerfile(), language='docker', label="Dockerfile")
+        # ***The problematic call from the traceback is here. It is now using the function correctly.***
+        st.code(generate_dockerfile(), language='docker', label="Dockerfile") 
 
         st.subheader("2. Docker & Private Registry Commands (Local Machine)")
         image_tag = f"{MBZUAI_REGISTRY_HOST}/{MBZUAI_PROJECT_REPO}/{LLM_IMAGE_NAME}:v1.0"
@@ -186,11 +195,12 @@ apptainer exec --nv {LLM_IMAGE_NAME}_v1.0.sif python3 /app/train_llm_model.py --
         
         col1, col2, col3 = st.columns(3)
         with col1:
-            nodes = st.number_input("Number of Nodes (--nodes)", min_value=1, value=4, step=1, help="Total number of compute nodes (for distributed training).")
+            # Note: Widgets persist state across runs, so the number_input is safe
+            nodes = st.number_input("Number of Nodes (--nodes)", min_value=1, value=4, step=1, help="Total number of compute nodes (for distributed training).", key="slurm_nodes")
         with col2:
-            gpus_per_node = st.number_input("GPUs per Node (--gpus-per-node)", min_value=1, max_value=8, value=8, step=1, help="GPUs on each node (e.g., 8 for A100/H100 nodes).")
+            gpus_per_node = st.number_input("GPUs per Node (--gpus-per-node)", min_value=1, max_value=8, value=8, step=1, help="GPUs on each node (e.g., 8 for A100/H100 nodes).", key="slurm_gpus")
         with col3:
-            time = st.text_input("Max Wall Time (--time)", value="1-00:00:00", help="Time limit format: D-HH:MM:SS (e.g., 1 day, 0 hours, 0 minutes).")
+            time = st.text_input("Max Wall Time (--time)", value="1-00:00:00", help="Time limit format: D-HH:MM:SS (e.g., 1 day, 0 hours, 0 minutes).", key="slurm_time")
 
         st.markdown("---")
         st.subheader("AI Optimization Profiles (LLM Focused)")
@@ -199,33 +209,32 @@ apptainer exec --nv {LLM_IMAGE_NAME}_v1.0.sif python3 /app/train_llm_model.py --
         
         script = None
         
+        # Use st.session_state to store the script result instead of a local variable
+        if 'generated_script' not in st.session_state:
+            st.session_state.generated_script = None
+
         with btn_col1:
             if st.button("Highly-Optimized for A100/H100 🚀", help="Multi-Node Distributed Data Parallel (DDP) Pre-training."):
-                script = generate_slurm_script("Highly-Optimized for A100/H100", nodes, gpus_per_node, time)
+                st.session_state.generated_script = generate_slurm_script("Highly-Optimized for A100/H100", nodes, gpus_per_node, time)
                 
         with btn_col2:
             if st.button("Optimized Training Jobscript (Single-Node) ⚙️", help="Fine-tuning or training on a single, powerful GPU node."):
-                script = generate_slurm_script("Optimized Training Jobscript", 1, gpus_per_node, time)
+                st.session_state.generated_script = generate_slurm_script("Optimized Training Jobscript", 1, gpus_per_node, time)
 
         with btn_col3:
             if st.button("Optimization 1: Low-Memory Fine-Tuning (LoRA) 💡", help="Parameter-Efficient Fine-Tuning (PEFT) using minimal GPU resources."):
-                script = generate_slurm_script("Optimization 1: Low-Memory Fine-Tuning (LoRA)", 1, 1, time)
+                st.session_state.generated_script = generate_slurm_script("Optimization 1: Low-Memory Fine-Tuning (LoRA)", 1, 1, time)
 
         with btn_col4:
             if st.button("Default Validation Job (CPU Only) 🔬", help="Runs quick checks of the container integrity and dependencies."):
-                script = generate_slurm_script("Default CPU Validation Job", 1, 0, "0-00:10:00") # Short time limit
+                st.session_state.generated_script = generate_slurm_script("Default CPU Validation Job", 1, 0, "0-00:10:00") 
 
-        if script:
+        if st.session_state.generated_script:
             st.markdown("### Generated SLURM Job Script")
-            st.code(script, language='bash')
+            st.code(st.session_state.generated_script, language='bash')
             st.download_button(
                 label="Download Job Script",
-                data=script,
+                data=st.session_state.generated_script,
                 file_name="mbzuai_llm_job.sh",
                 mime="text/plain"
             )
-
-# Example of what the main file (e.g., main_app.py) would look like:
-# if __name__ == '__main__':
-#     # This block would only be for testing the module directly
-#     render()
