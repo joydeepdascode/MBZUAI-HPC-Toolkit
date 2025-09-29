@@ -6,6 +6,7 @@ import hpc_job_scheduling
 import gpu_performance
 import troubleshooting
 import tools
+import local_to_hpc
 
 st.set_page_config(page_title="MBZUAI - AI & HPC Workflow", layout="wide")
 
