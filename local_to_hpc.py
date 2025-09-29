@@ -187,7 +187,8 @@ apptainer exec --nv {LLM_IMAGE_NAME}_v1.0.sif python3 /app/train_llm_model.py --
 # 3. Move the SIF image to a shared global location for job scripts
 # mv {LLM_IMAGE_NAME}_v1.0.sif /global/apps/containers/
 """
-        st.code(apptainer_commands, language='bash', label="Apptainer Pull and SIF Creation Commands")
+        # st.code(apptainer_commands, language='bash', label="Apptainer Pull and SIF Creation Commands")
+        st.code(apptainer_commands, language='bash')
         
     # --------------------------------------------------------------------------
     # Tab 2: SLURM Jobscript Generator
