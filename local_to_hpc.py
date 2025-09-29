@@ -2,24 +2,23 @@
 import streamlit as st
 
 # --- Configuration Constants (MBZUAI Context) ---
-# These variables must be defined before being used by the generator functions.
-MBZUAI_REGISTRY_HOST = "registry.mbzuai.ac" 
-MBZUAI_PROJECT_REPO = "llm-dev"
-LLM_IMAGE_NAME = "mha-prototype"
-SLURM_ACCOUNT = "llm_research_nlp"
-HPC_DATA_PATH = "/shared/scratch/llm_datasets" 
+# Use more generic names to target AI applications in general
+MBZUAI_REGISTRY_HOST = "registry.mbzuai.ac"
+MBZUAI_PROJECT_REPO = "ai-research"
+DEFAULT_IMAGE_NAME = "ml-app-base" # Generalized image name
+SLURM_ACCOUNT = "ai_research_hpc" # Generalized account name
+HPC_DATA_PATH = "/shared/scratch/ai_datasets" # Generalized data path
 
 # --- Generator Functions ---
 
-def generate_dockerfile(image_version="2.3.0-py3"):
+def generate_dockerfile(base_image_version, app_script_name, app_image_name):
     """
-    Generates the Dockerfile content.
-    Uses the defined constants from the module scope.
+    Generates a generalized Dockerfile content based on user inputs.
     """
-    # Using an f-string to embed the constants defined above
-    return f"""# Dockerfile for MBZUAI LLM Prototype (NLP/IFM Research)
+    # Using an f-string to embed the constants and user inputs
+    return f"""# Dockerfile for MBZUAI AI Application (General)
 # Use NVIDIA PyTorch NGC container as base for maximum GPU compatibility
-FROM nvcr.io/nvidia/pytorch:{image_version} AS builder
+FROM nvcr.io/nvidia/pytorch:{base_image_version} AS builder
 
 # Set the working directory
 WORKDIR /app
@@ -29,25 +28,30 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the core AI application code (e.g., your training script)
-COPY train_llm_model.py .
+# Copy the core AI application code
+COPY {app_script_name} .
 COPY src /app/src # Copy source code directory if applicable
 
 # Set a default command to run when the container starts
-CMD ["python", "train_llm_model.py", "--config", "/app/config/default.yaml"]
+# The command is derived from the main script name
+CMD ["python", "{app_script_name}", "--config", "/app/config/default.yaml"]
 """
 
-def generate_slurm_script(optimization_type, nodes, gpus_per_node, time):
+def generate_slurm_script(optimization_type, nodes, gpus_per_node, time, project_name):
     """
-    Generates a customized SLURM job script for LLM training.
+    Generates a customized SLURM job script for various AI tasks.
     Uses the defined constants from the module scope.
     """
     
+    # Use the generalized image name for the SIF file
+    sif_name = f"{project_name}-v1.0.sif"
+
     # --- Optimization Specific Logic and Command Setup ---
-    # (Rest of the logic remains the same, using the module-level constants)
-    if optimization_type == "Highly-Optimized for A100/H100":
-        # Multi-Node DDP using torchrun (standard for large LLMs)
+    if optimization_type == "Highly-Optimized Multi-Node (DDP)":
+        # Multi-Node DDP using torchrun (standard for large AI models)
         gpu_request = f"#SBATCH --gpus-per-node={gpus_per_node} \n#SBATCH --constraint=a100|h100"
+        nodes_final = nodes
+        time_final = time
         run_command = f"""
 # --- Distributed Training Setup (PyTorch DDP/Apptainer) ---
 export MASTER_ADDR=$(scontrol show hostnames $SLURM_JOB_NODELIST | head -n 1)
@@ -66,58 +70,72 @@ apptainer exec \\
         --rdzv_id $SLURM_JOB_ID \\
         --rdzv_backend c10d \\
         --rdzv_endpoint $MASTER_ADDR:$MASTER_PORT \\
-        /app/train_llm_model.py --data-path /data/full_corpus
+        /app/main_training_script.py --data-path /data/full_corpus
 """
-    elif optimization_type == "Optimized Training Jobscript":
+    elif optimization_type == "Single-Node Multi-GPU Training":
         # Single-node, multiple GPU (common for fine-tuning)
         gpu_request = f"#SBATCH --gpus={gpus_per_node}"
-        nodes = 1
+        nodes_final = 1
+        time_final = time
         run_command = f"""
-# --- Single-Node Multi-GPU Fine-Tuning ---
-# Using all GPUs on a single node for fast, single-process training
+# --- Single-Node Multi-GPU Fine-Tuning/Inference ---
 apptainer exec \\
     --nv \\
     --bind {HPC_DATA_PATH}:/data \\
     $SIF_FILE_PATH \\
-    python3 /app/train_llm_model.py --data-path /data/finetune_subset --gpus-per-node {gpus_per_node}
+    python3 /app/main_training_script.py --mode fine-tune --gpus-per-node {gpus_per_node}
 """
-    elif optimization_type == "Optimization 1: Low-Memory Fine-Tuning (LoRA)":
+    elif optimization_type == "Low-Memory Fine-Tuning (LoRA/PEFT)":
         # Low-resource configuration, e.g., using a single GPU
         gpu_request = "#SBATCH --gpus=1 \n#SBATCH --mem=64G"
-        nodes = 1
+        nodes_final = 1
+        time_final = time
         run_command = f"""
-# --- Optimization 1: PEFT/LoRA Fine-Tuning Setup ---
-# Designed for efficiency on a single GPU (e.g., QLoRA for a 7B model)
+# --- Low-Memory PEFT/LoRA Setup ---
 apptainer exec \\
     --nv \\
     --bind {HPC_DATA_PATH}:/data \\
     $SIF_FILE_PATH \\
-    python3 /app/train_llm_model.py --method lora --gpu 0 --data /data/peft_data
+    python3 /app/main_training_script.py --method lora --gpu 0
+"""
+    elif optimization_type == "Custom/User-Defined Job":
+        # A generic template where the user defines everything
+        gpu_request = f"#SBATCH --gpus={gpus_per_node} \n#SBATCH --constraint=a100|h100" if gpus_per_node > 0 else "#SBATCH --cpus-per-task=4"
+        nodes_final = nodes
+        time_final = time
+        run_command = f"""
+# --- Custom User-Defined Job ---
+# Placeholder: Adjust the apptainer exec line and script arguments below
+apptainer exec \\
+    --nv \\
+    --bind {HPC_DATA_PATH}:/data \\
+    $SIF_FILE_PATH \\
+    /bin/bash -c "echo 'Custom job running...' && python3 /app/my_custom_script.py --nodes $SLURM_JOB_NUM_NODES"
 """
     else: # Default Validation/CPU Test
         gpu_request = "#SBATCH --cpus-per-task=4"
-        nodes = 1
+        nodes_final = 1
+        time_final = "0-00:10:00"
         run_command = f"""
 # --- Default CPU Validation Job ---
-# Quick check of environment and dependencies before resource-intensive GPU use.
 apptainer exec \\
     $SIF_FILE_PATH \\
-    python3 /app/train_llm_model.py --validate-cpu
+    python3 /app/check_dependencies.py --validate-cpu
 """
 
     # --- Final SLURM Script Template ---
     return f"""#!/bin/bash
 #
 # SLURM Job Script: {optimization_type}
-# Targeting MBZUAI LLM Research
+# Targeting MBZUAI AI Research Project: {project_name}
 #
-#SBATCH --job-name=MBZUAI_LLM_{optimization_type.replace(' ', '_').replace(':', '')}
+#SBATCH --job-name={project_name}_{optimization_type.replace(' ', '_').replace('/', '').replace(':', '')}
 #SBATCH --account={SLURM_ACCOUNT}
 #SBATCH --partition=compute
-#SBATCH --nodes={nodes}
+#SBATCH --nodes={nodes_final}
 {gpu_request}
 #SBATCH --ntasks-per-node=1
-#SBATCH --time={time}
+#SBATCH --time={time_final}
 #SBATCH --output=slurm-%j.out
 #SBATCH --error=slurm-%j.err
 
@@ -125,7 +143,7 @@ echo "--- SLURM JOB START: $(date) ---"
 
 # --- Environment Setup ---
 module load apptainer # Load Apptainer runtime module
-SIF_FILE_PATH="/global/apps/containers/{LLM_IMAGE_NAME}_v1.0.sif" 
+SIF_FILE_PATH="/global/apps/containers/{sif_name}" 
 
 # Check if SIF exists (best practice)
 if [ ! -f "$SIF_FILE_PATH" ]; then
@@ -142,23 +160,45 @@ echo "--- SLURM JOB END: $(date) ---"
 
 def render():
     """Renders the Streamlit UI for the Local To HPC tab."""
-    st.header("Local To HPC: Containerized Research Workflow 📦➡️💻")
-    st.markdown("A step-by-step guide to move your PyTorch/LLM code from local development to execution on the MBZUAI HPC Cluster using **Docker/Apptainer** and **SLURM**.")
+    st.header("Local To HPC: Containerized AI Workflow 📦➡️💻")
+    st.markdown("A step-by-step guide to move your PyTorch/AI code from local development to execution on the MBZUAI HPC Cluster using **Docker/Apptainer** and **SLURM**.")
 
-    tab1, tab2 = st.tabs(["Container Build Workflow", "SLURM Jobscript Generator"])
+    tab1, tab2 = st.tabs(["Container Build Generator 🛠️", "SLURM Jobscript Generator ⚙️"])
 
     # --------------------------------------------------------------------------
-    # Tab 1: Container Build Workflow
+    # Tab 1: Container Build Generator
     # --------------------------------------------------------------------------
     with tab1:
-        st.subheader("1. Dockerfile (Local Environment Definition)")
-        st.info("Define your environment in a **`Dockerfile`**. It starts from a trusted, GPU-ready base image (e.g., NVIDIA's NGC PyTorch image).")
-        # ***The problematic call from the traceback is here. It is now using the function correctly.***
-        # st.code(generate_dockerfile(), language='docker', label="Dockerfile") 
-        st.code(generate_dockerfile(), language='docker')
+        st.subheader("1. Customize Container Definition (Dockerfile)")
+        st.markdown("Generate a general-purpose Dockerfile for any MBZUAI AI application.")
+        
+        # User Inputs for Customization
+        col_t1_1, col_t1_2 = st.columns(2)
+        with col_t1_1:
+            base_image_version = st.text_input("NVIDIA PyTorch Base Image Tag", 
+                                                value="24.08-py3", 
+                                                help="Find the latest tags on NGC (e.g., 24.08-py3).",
+                                                key="docker_base_tag")
+        with col_t1_2:
+            app_script_name = st.text_input("Main Application Script File", 
+                                            value="train_llm_model.py", 
+                                            help="The Python script to run when the container starts.",
+                                            key="docker_script_name")
+        
+        app_image_name = st.text_input("AI Project Name / Image Name", 
+                                       value=DEFAULT_IMAGE_NAME, 
+                                       help="Used to tag the Docker image and name the SIF file (e.g., my-cv-model).",
+                                       key="docker_image_name")
+
+        st.markdown("---")
+        st.subheader("Generated Dockerfile")
+        
+        # Generate and display Dockerfile
+        dockerfile_content = generate_dockerfile(base_image_version, app_script_name, app_image_name)
+        st.code(dockerfile_content, language='docker')
 
         st.subheader("2. Docker & Private Registry Commands (Local Machine)")
-        image_tag = f"{MBZUAI_REGISTRY_HOST}/{MBZUAI_PROJECT_REPO}/{LLM_IMAGE_NAME}:v1.0"
+        image_tag = f"{MBZUAI_REGISTRY_HOST}/{MBZUAI_PROJECT_REPO}/{app_image_name}:v1.0"
         
         docker_commands = f"""
 # 1. Build the Docker image on your local machine
@@ -170,74 +210,74 @@ docker login {MBZUAI_REGISTRY_HOST}
 # 3. Push the image to the registry for Apptainer access
 docker push {image_tag}
 """
-        # st.code(docker_commands, language='bash', label="Docker Build and Push Commands")
         st.code(docker_commands, language='bash')
 
         st.subheader("3. Apptainer Commands (HPC Login Node)")
-        st.warning("Ensure the **Apptainer module is loaded** (`module load apptainer`) before running these commands on the HPC login node.")
-        
+        sif_file = f"{app_image_name}_v1.0.sif"
         apptainer_commands = f"""
 # 1. Pull the Docker image from the private registry and convert it to a secure SIF file.
-# The SIF file is the native container format for HPC (Apptainer/Singularity).
-apptainer build {LLM_IMAGE_NAME}_v1.0.sif docker://{image_tag}
+apptainer build {sif_file} docker://{image_tag}
 
-# 2. Verify the SIF image (Optional)
-apptainer exec --nv {LLM_IMAGE_NAME}_v1.0.sif python3 /app/train_llm_model.py --version
-
-# 3. Move the SIF image to a shared global location for job scripts
-# mv {LLM_IMAGE_NAME}_v1.0.sif /global/apps/containers/
+# 2. Move the SIF image to a shared global location for job scripts
+# mv {sif_file} /global/apps/containers/
 """
-        # st.code(apptainer_commands, language='bash', label="Apptainer Pull and SIF Creation Commands")
         st.code(apptainer_commands, language='bash')
         
     # --------------------------------------------------------------------------
     # Tab 2: SLURM Jobscript Generator
     # --------------------------------------------------------------------------
     with tab2:
-        st.subheader("SLURM Resource Configuration")
+        st.subheader("1. Project & Resource Configuration")
         
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            # Note: Widgets persist state across runs, so the number_input is safe
-            nodes = st.number_input("Number of Nodes (--nodes)", min_value=1, value=4, step=1, help="Total number of compute nodes (for distributed training).", key="slurm_nodes")
-        with col2:
-            gpus_per_node = st.number_input("GPUs per Node (--gpus-per-node)", min_value=1, max_value=8, value=8, step=1, help="GPUs on each node (e.g., 8 for A100/H100 nodes).", key="slurm_gpus")
-        with col3:
-            time = st.text_input("Max Wall Time (--time)", value="1-00:00:00", help="Time limit format: D-HH:MM:SS (e.g., 1 day, 0 hours, 0 minutes).", key="slurm_time")
+        project_name = st.text_input("Your Project Name (for Job-Name & SIF)", 
+                                     value="my-llm-finetune", 
+                                     help="Used in the job name and SIF file path.",
+                                     key="slurm_project_name")
+        
+        # Consolidated Resource Inputs
+        col_t2_1, col_t2_2, col_t2_3 = st.columns(3)
+        with col_t2_1:
+            nodes = st.number_input("Number of Nodes (--nodes)", min_value=1, value=1, step=1, 
+                                    help="Total number of compute nodes requested.", key="slurm_nodes_t2")
+        with col_t2_2:
+            gpus_per_node = st.number_input("GPUs per Node (--gpus/gpus-per-node)", min_value=0, max_value=8, value=4, step=1, 
+                                            help="GPUs on each node (0 for CPU-only job).", key="slurm_gpus_t2")
+        with col_t2_3:
+            time = st.text_input("Max Wall Time (--time)", value="12:00:00", 
+                                 help="Time limit format: D-HH:MM:SS or HH:MM:SS (e.g., 1-00:00:00).", key="slurm_time_t2")
 
         st.markdown("---")
-        st.subheader("AI Optimization Profiles (LLM Focused)")
+        st.subheader("2. Select Job Profile and Generate")
         
-        btn_col1, btn_col2, btn_col3, btn_col4 = st.columns(4)
+        optimization_options = [
+            "Highly-Optimized Multi-Node (DDP)",
+            "Single-Node Multi-GPU Training",
+            "Low-Memory Fine-Tuning (LoRA/PEFT)",
+            "Custom/User-Defined Job",
+            "Default CPU Validation Job"
+        ]
         
-        script = None
+        selected_profile = st.selectbox("Select Optimization Profile", 
+                                        optimization_options, 
+                                        help="Choose a pre-configured template for your AI task.",
+                                        key="slurm_profile_select")
         
-        # Use st.session_state to store the script result instead of a local variable
-        if 'generated_script' not in st.session_state:
-            st.session_state.generated_script = None
+        # Use st.session_state to store the script result
+        if 'generated_script_t2' not in st.session_state:
+            st.session_state.generated_script_t2 = None
 
-        with btn_col1:
-            if st.button("Highly-Optimized for A100/H100 🚀", help="Multi-Node Distributed Data Parallel (DDP) Pre-training."):
-                st.session_state.generated_script = generate_slurm_script("Highly-Optimized for A100/H100", nodes, gpus_per_node, time)
-                
-        with btn_col2:
-            if st.button("Optimized Training Jobscript (Single-Node) ⚙️", help="Fine-tuning or training on a single, powerful GPU node."):
-                st.session_state.generated_script = generate_slurm_script("Optimized Training Jobscript", 1, gpus_per_node, time)
+        # Single Generate Button
+        if st.button(f"Generate SLURM Script for: {selected_profile} 🚀", key="generate_slurm_btn"):
+            st.session_state.generated_script_t2 = generate_slurm_script(
+                selected_profile, nodes, gpus_per_node, time, project_name
+            )
 
-        with btn_col3:
-            if st.button("Optimization 1: Low-Memory Fine-Tuning (LoRA) 💡", help="Parameter-Efficient Fine-Tuning (PEFT) using minimal GPU resources."):
-                st.session_state.generated_script = generate_slurm_script("Optimization 1: Low-Memory Fine-Tuning (LoRA)", 1, 1, time)
-
-        with btn_col4:
-            if st.button("Default Validation Job (CPU Only) 🔬", help="Runs quick checks of the container integrity and dependencies."):
-                st.session_state.generated_script = generate_slurm_script("Default CPU Validation Job", 1, 0, "0-00:10:00") 
-
-        if st.session_state.generated_script:
-            st.markdown("### Generated SLURM Job Script")
-            st.code(st.session_state.generated_script, language='bash')
+        if st.session_state.generated_script_t2:
+            st.markdown("### 3. Generated SLURM Job Script")
+            st.code(st.session_state.generated_script_t2, language='bash')
             st.download_button(
                 label="Download Job Script",
-                data=st.session_state.generated_script,
-                file_name="mbzuai_llm_job.sh",
+                data=st.session_state.generated_script_t2,
+                file_name=f"{project_name}_job.sh",
                 mime="text/plain"
             )
