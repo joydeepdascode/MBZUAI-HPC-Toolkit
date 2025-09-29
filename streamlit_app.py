@@ -33,7 +33,8 @@ tabs = st.tabs([
     "HPC Job Scheduling",
     "GPU Performance Basics",
     "Troubleshooting Techniques",
-    "Tools"
+    "Tools",
+    "Local To HPC"
 ])
 
 with tabs[0]:
@@ -50,3 +51,5 @@ with tabs[5]:
     troubleshooting.render()
 with tabs[6]:
     tools.render()    
+with tabs[7]:
+    local_to_hpc.render()      
