@@ -233,3 +233,46 @@ def render():
     apptainer remote                              # Manages remote registries and keyservers
     apptainer oci                                 # Works with OCI-compliant images (like Docker)
     """)
+    st.markdown("---")
+
+    st.header("Dockerfile: The Blueprint for a Container")
+    st.markdown("""
+    A **Dockerfile** is a text file that contains a series of instructions for Docker to build a **Docker image**. Each instruction creates a new layer on top of the previous one, defining the complete environment—from the operating system to the application code and dependencies.
+    """)
+    st.markdown("#### **Core Dockerfile Instructions**")
+    st.markdown(textwrap.dedent("""
+    - **`FROM [image]:[tag]`**: Specifies the **base image** for the build. This must be the first instruction.
+    - **`RUN [command]`**: Executes a command inside the container during the image build. This is used to install software.
+    - **`COPY [source] [destination]`**: Copies files from your local machine (the build context) into the container image.
+    - **`WORKDIR [path]`**: Sets the **working directory** for all subsequent instructions.
+    - **`CMD ["executable", "param1", "param2"]`**: Provides **default arguments** for an executing container. This is overridden by a command on `docker run`.
+    - **`ENTRYPOINT ["executable", "param1", "param2"]`**: Configures the container to run as a specific **executable**. It is not overridden by `docker run` but instead, the command is appended as arguments.
+    - **`ENV [key] [value]`**: Sets an **environment variable** inside the container.
+    - **`EXPOSE [port]`**: Informs Docker that the container listens on the specified network ports at runtime.
+    - **`LABEL [key]="[value]"`**: Adds **metadata** to an image.
+    """))
+
+    st.markdown("#### **Example Dockerfile**")
+    _code("""
+    # Use a lightweight official Python base image
+    FROM python:3.9-slim
+
+    # Set an environment variable
+    ENV PYTHONUNBUFFERED=1
+
+    # Set the working directory
+    WORKDIR /app
+
+    # Copy the requirements file and install dependencies
+    COPY requirements.txt .
+    RUN pip install -r requirements.txt
+
+    # Copy the application code
+    COPY . .
+
+    # Expose a port (for documentation)
+    EXPOSE 5000
+
+    # Run the application
+    CMD ["python", "app.py"]
+    """, language="Dockerfile")
