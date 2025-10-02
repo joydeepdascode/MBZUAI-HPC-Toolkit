@@ -32,7 +32,7 @@ watch -n 1 nvidia-smi
 
 # If available, 'gpustat' offers a cleaner, single-line overview
 gpustat --watch 1
-""", lang="bash")
+""")
         
         st.markdown("#### Key Metrics in `nvidia-smi`")
         st.markdown(textwrap.dedent("""
@@ -71,7 +71,7 @@ with amp.autocast():
 scaler.scale(loss).backward()
 scaler.step(optimizer)
 scaler.update()
-""", lang="python")
+""")
 
         st.markdown("#### B. Gradient Accumulation")
         st.markdown("""
