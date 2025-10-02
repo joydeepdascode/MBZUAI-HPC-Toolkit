@@ -32,7 +32,7 @@ watch -n 1 nvidia-smi
 
 # If available, 'gpustat' offers a cleaner, single-line overview
 gpustat --watch 1
-""", language="bash")
+""", lang="bash")
         
         st.markdown("#### Key Metrics in `nvidia-smi`")
         st.markdown(textwrap.dedent("""
