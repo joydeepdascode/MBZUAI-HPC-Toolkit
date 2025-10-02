@@ -71,7 +71,7 @@ with amp.autocast():
 scaler.scale(loss).backward()
 scaler.step(optimizer)
 scaler.update()
-""", language="python")
+""", lang="python")
 
         st.markdown("#### B. Gradient Accumulation")
         st.markdown("""
