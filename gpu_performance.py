@@ -95,7 +95,7 @@ for i, (data, target) in enumerate(dataloader):
     if (i + 1) % ACCUMULATION_STEPS == 0:
         optimizer.step()
         optimizer.zero_grad()
-""", language="python")
+""")
 
     st.markdown("---")
     
@@ -132,7 +132,7 @@ model.cuda(local_rank)
 # 3. Wrap model
 model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[local_rank])
 # ... Proceed with training ...
-""", language="python")
+""")
 
     st.markdown("---")
 
@@ -163,7 +163,7 @@ print(f"Reserved Memory: {reserved_bytes / (1024**3):.2f} GB")
 
 # Clear unused cached memory
 torch.cuda.empty_cache()
-""", language="python")
+""")
 
         st.markdown("#### PyTorch Profiler (Identifying Bottlenecks)")
         st.markdown("""
@@ -191,6 +191,6 @@ with profiler.profile(
             
 # Run TensorBoard locally via SSH Tunnel to view results!
 # tensorboard --logdir=./log
-""", language="python")
+""")
 
     st.success("You are now equipped with the tools and techniques to optimize your AI workloads for peak performance on the MBZUAI HPC cluster!")
