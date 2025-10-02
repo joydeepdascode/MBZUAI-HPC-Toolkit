@@ -16,3 +16,8 @@ This guide covers the crucial steps for robust, reproducible AI research:
 
 ## Why This Matters
 This standardized workflow allows students and faculty to rapidly iterate locally and seamlessly scale experiments globally, accelerating the pace of AI discovery at MBZUAI.
+
+
+## Link
+
+https://mbzuai-hpc-toolkit.streamlit.app/
